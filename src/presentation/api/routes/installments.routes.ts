@@ -1,4 +1,5 @@
 import type { InstallmentService } from "@/application/installments/InstallmentService";
+import type { SubscriptionService } from "@/application/subscriptions/SubscriptionService";
 import { requireAuth } from "@/infrastructure/auth/AuthMiddleware";
 
 /**
@@ -6,7 +7,10 @@ import { requireAuth } from "@/infrastructure/auth/AuthMiddleware";
  * 
  * Handles installment/payment operations
  */
-export function createInstallmentRoutes(installmentService: InstallmentService) {
+export function createInstallmentRoutes(
+  installmentService: InstallmentService,
+  subscriptionService: SubscriptionService
+) {
   return {
     /**
      * Get all installments for current user
@@ -16,18 +20,32 @@ export function createInstallmentRoutes(installmentService: InstallmentService) 
         try {
           const userId = req.session.userId;
 
+          // Ensure installments exist for all subscriptions (auto-generate if running low)
+          const subscriptions = await subscriptionService.getUserSubscriptions(userId);
+          await Promise.all(
+            subscriptions.map(sub => subscriptionService.ensureInstallmentsForSubscription(sub.uuid))
+          );
+
           const installments = await installmentService.getUserInstallments(userId);
           
           return Response.json({
-            data: installments.map(inst => ({
-              uuid: inst.uuid,
-              subscriptionId: inst.subscriptionId,
-              date: inst.date.toISOString(),
-              link: inst.link,
-              paid: inst.paid,
-              createdAt: inst.createdAt.toISOString(),
-              updatedAt: inst.updatedAt.toISOString(),
-            })),
+            data: installments.map(inst => {
+              // Extract htmlLink from stored link (handles both combined and old format)
+              let htmlLink = inst.link;
+              if (inst.link && inst.link.includes("|")) {
+                htmlLink = inst.link.split("|")[0];
+              }
+              
+              return {
+                uuid: inst.uuid,
+                subscriptionId: inst.subscriptionId,
+                date: inst.date.toISOString(),
+                link: htmlLink, // Return only htmlLink for frontend
+                paid: inst.paid,
+                createdAt: inst.createdAt.toISOString(),
+                updatedAt: inst.updatedAt.toISOString(),
+              };
+            }),
           });
         } catch (error) {
           console.error("Get installments error:", error);
@@ -79,7 +97,8 @@ export function createInstallmentRoutes(installmentService: InstallmentService) 
             return Response.json({ error: "Installment ID required" }, { status: 400 });
           }
 
-          const installment = await installmentService.markAsPaid(id);
+          const userId = req.session.userId;
+          const installment = await installmentService.markAsPaid(id, userId);
 
           return Response.json({
             data: {
@@ -117,12 +136,18 @@ export function createInstallmentRoutes(installmentService: InstallmentService) 
 
           const installment = await installmentService.confirmPaymentFromCalendarLink(link);
 
+          // Extract htmlLink from stored link for response
+          let htmlLink = installment.link;
+          if (installment.link && installment.link.includes("|")) {
+            htmlLink = installment.link.split("|")[0];
+          }
+
           return Response.json({
             data: {
               uuid: installment.uuid,
               subscriptionId: installment.subscriptionId,
               date: installment.date.toISOString(),
-              link: installment.link,
+              link: htmlLink, // Return only htmlLink for frontend
               paid: installment.paid,
               createdAt: installment.createdAt.toISOString(),
               updatedAt: installment.updatedAt.toISOString(),

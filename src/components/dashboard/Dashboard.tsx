@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getDashboardData, getCurrentUser } from "@/lib/api";
+import { getDashboardData, getUserProfile } from "@/lib/api";
 import { Calendar, DollarSign, AlertCircle, CheckCircle2, TrendingUp, Clock, Inbox } from "lucide-react";
+import { formatCurrency, type CurrencyCode } from "@/lib/currency";
 
 interface DashboardData {
   nextPayments: Array<{
@@ -40,12 +41,28 @@ export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<CurrencyCode>("IDR");
 
   useEffect(() => {
+    loadUserCurrency();
     loadDashboard();
   }, []);
 
-  const loadDashboard = async () => {
+  const loadUserCurrency = async () => {
+    try {
+      const response = await getUserProfile();
+      if (response.data) {
+        const profileData = response.data.data || response.data;
+        setCurrency((profileData.currency || "IDR") as CurrencyCode);
+      }
+    } catch (err) {
+      console.error("Failed to load user currency:", err);
+      // Default to IDR if failed
+      setCurrency("IDR");
+    }
+  };
+
+  const loadDashboard = useCallback(async () => {
     setLoading(true);
     setError(null);
     const response = await getDashboardData();
@@ -58,7 +75,7 @@ export function Dashboard() {
       setData(dashboardData);
     }
     setLoading(false);
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -227,7 +244,7 @@ export function Dashboard() {
                       </div>
                       <div className="text-right ml-4">
                         <p className="font-bold text-lg text-primary">
-                          ${payment.subscription.price.toFixed(2)}
+                          {formatCurrency(payment.subscription.price, currency)}
                         </p>
                       </div>
                     </div>
@@ -274,7 +291,7 @@ export function Dashboard() {
                       </div>
                       <div className="text-right ml-4">
                         <p className="font-bold text-lg text-primary">
-                          ${sub.price.toFixed(2)}
+                          {formatCurrency(sub.price, currency)}
                         </p>
                       </div>
                     </div>

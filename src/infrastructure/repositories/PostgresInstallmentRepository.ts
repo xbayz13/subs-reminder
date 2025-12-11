@@ -18,8 +18,18 @@ export class PostgresInstallmentRepository implements IInstallmentRepository {
   }
 
   async findByCalendarLink(link: string): Promise<Installment | null> {
-    const result = await this.db`
+    // Try exact match first
+    let result = await this.db`
       SELECT * FROM installments WHERE link = ${link}
+    `;
+    
+    if (result.length > 0) {
+      return this.mapToEntity(result[0]);
+    }
+
+    // If not found, try to find by htmlLink part (for combined format: "htmlLink|eventId")
+    result = await this.db`
+      SELECT * FROM installments WHERE link LIKE ${link + '%'}
     `;
     
     if (result.length === 0) return null;

@@ -16,8 +16,23 @@ export class PrismaInstallmentRepository implements IInstallmentRepository {
   }
 
   async findByCalendarLink(link: string): Promise<Installment | null> {
-    const result = await prisma.installment.findFirst({
+    // Try exact match first
+    let result = await prisma.installment.findFirst({
       where: { link },
+    });
+
+    if (result) {
+      return this.mapToEntity(result);
+    }
+
+    // If not found, try to find by htmlLink part (for combined format: "htmlLink|eventId")
+    // Search for links that start with the provided link
+    result = await prisma.installment.findFirst({
+      where: {
+        link: {
+          startsWith: link,
+        },
+      },
     });
 
     if (!result) return null;

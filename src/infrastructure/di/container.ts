@@ -20,10 +20,12 @@ const installmentRepository = new PrismaInstallmentRepository();
 export const userService = new UserService(userRepository);
 export const subscriptionService = new SubscriptionService(
   subscriptionRepository,
-  installmentRepository
+  installmentRepository,
+  userRepository
 );
 export const installmentService = new InstallmentService(
   installmentRepository,
-  subscriptionRepository
+  subscriptionRepository,
+  userRepository
 );
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -39,13 +39,7 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [currency, setCurrency] = useState<string>("IDR");
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadProfile();
-    }
-  }, [isAuthenticated]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -63,9 +57,15 @@ export function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSaveCurrency = async () => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadProfile();
+    }
+  }, [isAuthenticated, loadProfile]);
+
+  const handleSaveCurrency = useCallback(async () => {
     if (!profile) return;
     
     setSaving(true);
@@ -75,20 +75,20 @@ export function ProfilePage() {
       const response = await updateUserProfile({ currency });
       if (response.error) {
         setError(response.error);
-        toast.showToast("error", "Gagal mengupdate currency", response.error);
+        toast.error(`Gagal mengupdate currency: ${response.error}`);
       } else {
         // Reload profile to get updated data
         await loadProfile();
-        toast.showToast("success", "Currency berhasil diupdate", `Currency diubah menjadi ${currency}`);
+        toast.success(`Currency berhasil diupdate menjadi ${currency}`);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to update currency";
       setError(errorMessage);
-      toast.showToast("error", "Gagal mengupdate currency", errorMessage);
+      toast.error(`Gagal mengupdate currency: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
-  };
+  }, [profile, currency, toast, loadProfile]);
 
   const getUserInitials = () => {
     if (!profile?.name) return "U";

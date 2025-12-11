@@ -13,7 +13,7 @@ import { createSwaggerRoutes } from "./presentation/api/routes/swagger.routes";
 const authRoutes = createAuthRoutes(userService);
 const userRoutes = createUserRoutes(userService);
 const subscriptionRoutes = createSubscriptionRoutes(subscriptionService);
-const installmentRoutes = createInstallmentRoutes(installmentService);
+const installmentRoutes = createInstallmentRoutes(installmentService, subscriptionService);
 const dashboardRoutes = createDashboardRoutes(subscriptionService, installmentService);
 const swaggerRoutes = createSwaggerRoutes();
 

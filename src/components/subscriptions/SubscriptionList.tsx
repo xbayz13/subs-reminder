@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getSubscriptions, deleteSubscription, getCurrentUser } from "@/lib/api";
+import { getSubscriptions, deleteSubscription, getUserProfile } from "@/lib/api";
 import { Plus, Trash2, Edit, Calendar, AlertCircle, Inbox } from "lucide-react";
 import type { SubscriptionType, ReminderStart } from "@/domain/subscriptions/entities/Subscription";
+import { formatCurrency, type CurrencyCode } from "@/lib/currency";
 
 interface Subscription {
   uuid: string;
@@ -36,12 +37,22 @@ export function SubscriptionList({ onCreateClick, onEditClick }: SubscriptionLis
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<CurrencyCode>("IDR");
 
   useEffect(() => {
-    loadSubscriptions();
+    // Load currency and subscriptions in parallel
+    Promise.all([
+      getUserProfile().then(response => {
+        if (response.data) {
+          const profileData = response.data.data || response.data;
+          setCurrency((profileData.currency || "IDR") as CurrencyCode);
+        }
+      }).catch(() => setCurrency("IDR")),
+      loadSubscriptions()
+    ]);
   }, []);
 
-  const loadSubscriptions = async () => {
+  const loadSubscriptions = useCallback(async () => {
     setLoading(true);
     setError(null);
     const response = await getSubscriptions(false);
@@ -63,9 +74,9 @@ export function SubscriptionList({ onCreateClick, onEditClick }: SubscriptionLis
       }
     }
     setLoading(false);
-  };
+  }, []);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm("Apakah Anda yakin ingin menghapus langganan ini?")) {
       return;
     }
@@ -76,25 +87,25 @@ export function SubscriptionList({ onCreateClick, onEditClick }: SubscriptionLis
     } else {
       loadSubscriptions();
     }
-  };
+  }, [loadSubscriptions]);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-  };
+  }, []);
 
-  const getMonthName = (month: number): string => {
+  const getMonthName = useCallback((month: number): string => {
     const months = [
       "Januari", "Februari", "Maret", "April", "Mei", "Juni",
       "Juli", "Agustus", "September", "Oktober", "November", "Desember"
     ];
     return months[month - 1] || "";
-  };
+  }, []);
 
-  const formatReminder = (reminder: ReminderStart) => {
+  const formatReminder = useCallback((reminder: ReminderStart) => {
     const map: Record<ReminderStart, string> = {
       D_0: "Hari yang sama",
       D_1: "1 hari sebelumnya",
@@ -103,7 +114,7 @@ export function SubscriptionList({ onCreateClick, onEditClick }: SubscriptionLis
       D_14: "14 hari sebelumnya",
     };
     return map[reminder] || reminder;
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -208,7 +219,7 @@ export function SubscriptionList({ onCreateClick, onEditClick }: SubscriptionLis
                 </div>
                 <div className="flex items-baseline gap-1 mt-2">
                   <span className="text-3xl font-bold text-primary">
-                    ${sub.price.toFixed(2)}
+                    {formatCurrency(sub.price, currency)}
                   </span>
                 </div>
                 {sub.description && (

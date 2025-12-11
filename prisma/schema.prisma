@@ -97,7 +97,7 @@ enum ReminderStart {
 model Session {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
-  token     String   @unique @db.VarChar(255) // Session token (HMAC signed)
+  token     String   @unique @db.Text // Session token (HMAC signed) - can be long
   expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)

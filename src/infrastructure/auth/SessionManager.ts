@@ -119,8 +119,13 @@ export class SessionManager {
       });
       
       console.log("[SESSION] ✅ Cookie set via Bun CookieMap API and saved to database");
+      console.log("[SESSION] Token length:", signedCookie.length, "characters");
     } catch (error) {
       console.error("[SESSION] ❌ Error saving session to database:", error);
+      if (error instanceof Error) {
+        console.error("[SESSION] Error message:", error.message);
+        console.error("[SESSION] Error stack:", error.stack);
+      }
       // Don't fail if database save fails - cookie is still set
       console.log("[SESSION] ⚠️ Cookie set but database save failed");
     }

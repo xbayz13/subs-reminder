@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggleButton } from "@/components/ui/theme-toggle";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, Calendar, List, LogOut, Menu, X, User } from "lucide-react";
+import { Home, Calendar, List, LogOut, Menu, X, User, CreditCard } from "lucide-react";
 import { logout } from "@/lib/api";
 
 interface NavbarProps {
@@ -68,6 +68,15 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
           >
             <List className="h-4 w-4" />
             <span>Subscriptions</span>
+          </Button>
+          <Button
+            variant={currentPage === "installments" ? "default" : "ghost"}
+            onClick={() => onNavigate("installments")}
+            size="sm"
+            className="gap-2"
+          >
+            <CreditCard className="h-4 w-4" />
+            <span>Installments</span>
           </Button>
           <Button
             variant={currentPage === "profile" ? "default" : "ghost"}
@@ -164,6 +173,18 @@ export function Navbar({ currentPage, onNavigate }: NavbarProps) {
             >
               <List className="h-4 w-4" />
               Subscriptions
+            </Button>
+            <Button
+              variant={currentPage === "installments" ? "default" : "ghost"}
+              onClick={() => {
+                onNavigate("installments");
+                setMobileMenuOpen(false);
+              }}
+              className="w-full justify-start gap-2"
+              size="sm"
+            >
+              <CreditCard className="h-4 w-4" />
+              Installments
             </Button>
             <Button
               variant={currentPage === "profile" ? "default" : "ghost"}

@@ -39,11 +39,10 @@ describe("Installment Routes Integration", () => {
     subscriptionService = new SubscriptionService(
       subscriptionRepo,
       installmentRepo,
-      userRepo,
-      calendarService
+      userRepo
     );
 
-    installmentService = new InstallmentService(installmentRepo, subscriptionRepo);
+    installmentService = new InstallmentService(installmentRepo, subscriptionRepo, userRepo);
 
     // Create a subscription with installments
     const subscription = await subscriptionService.createSubscription(
@@ -73,7 +72,7 @@ describe("Installment Routes Integration", () => {
   });
 
   test("GET /api/installments returns user installments", async () => {
-    const routes = createInstallmentRoutes(installmentService);
+    const routes = createInstallmentRoutes(installmentService, subscriptionService);
     const handler = routes["/api/installments"]?.GET;
 
     if (!handler) {
@@ -96,7 +95,7 @@ describe("Installment Routes Integration", () => {
   });
 
   test("PUT /api/installments/:id/paid marks installment as paid", async () => {
-    const routes = createInstallmentRoutes(installmentService);
+    const routes = createInstallmentRoutes(installmentService, subscriptionService);
     
     // Get an installment first
     const getHandler = routes["/api/installments"]?.GET;
@@ -140,7 +139,7 @@ describe("Installment Routes Integration", () => {
   });
 
   test("POST /api/installments/confirm confirms payment from calendar link", async () => {
-    const routes = createInstallmentRoutes(installmentService);
+    const routes = createInstallmentRoutes(installmentService, subscriptionService);
     
     // Get an installment with a link
     const installments = await installmentService.getUserInstallments(testUser.id);
@@ -175,7 +174,7 @@ describe("Installment Routes Integration", () => {
   });
 
   test("GET /api/installments requires authentication", async () => {
-    const routes = createInstallmentRoutes(installmentService);
+    const routes = createInstallmentRoutes(installmentService, subscriptionService);
     const handler = routes["/api/installments"]?.GET;
 
     if (!handler) {

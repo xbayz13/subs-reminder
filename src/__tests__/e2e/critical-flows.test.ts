@@ -124,7 +124,7 @@ describe("E2E: Critical Flows", () => {
     expect(listData.data.some((sub: any) => sub.uuid === subscriptionId)).toBe(true);
 
     // 4. User views installments
-    const installmentRoutes = createInstallmentRoutes(installmentService);
+    const installmentRoutes = createInstallmentRoutes(installmentService, subscriptionService);
     const getInstallmentsHandler = installmentRoutes["/api/installments"]?.GET;
     if (!getInstallmentsHandler) throw new Error("Handler not found");
 
@@ -230,7 +230,7 @@ describe("E2E: Critical Flows", () => {
       });
 
       // 4. Confirm payment from calendar link
-      const installmentRoutes = createInstallmentRoutes(installmentService);
+      const installmentRoutes = createInstallmentRoutes(installmentService, subscriptionService);
       const confirmHandler = installmentRoutes["/api/installments/confirm"]?.POST;
       if (!confirmHandler) throw new Error("Handler not found");
 
