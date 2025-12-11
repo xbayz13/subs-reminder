@@ -1,0 +1,127 @@
+# Dependencies
+node_modules/
+bun.lockb
+
+# Build outputs
+out/
+dist/
+build/
+*.tgz
+*.tar.gz
+
+# Prisma
+# Note: Keep migrations, but ignore generated client in some setups
+# Uncomment if you want to ignore generated Prisma Client
+# prisma/generated/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+test-results/
+playwright-report/
+
+# Cache
+.cache/
+.eslintcache
+*.tsbuildinfo
+.turbo/
+.next/
+.nuxt/
+.vite/
+.bun/
+
+# IDE - VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IDE - IntelliJ / WebStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# IDE - Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# IDE - Vim
+*.swp
+*.swo
+*~
+
+# OS - macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# OS - Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# OS - Linux
+*~
+.directory
+.Trash-*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Bun specific
+.bun/
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional: Keep these if you want to track them
+# Uncomment to ignore
+# .env.test
+# .env.production

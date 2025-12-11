@@ -1,0 +1,112 @@
+// Prisma Schema for Subscription Reminder
+// This file defines the database schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users Table
+model User {
+  id          String   @id @default(uuid()) @db.Uuid
+  googleId    String   @unique @map("google_id") @db.VarChar(255)
+  name        String   @db.VarChar(255)
+  email       String   @unique @db.VarChar(255)
+  avatar      String?  @db.Text
+  country     String?  @db.VarChar(100)
+  currency    String   @default("USD") @db.VarChar(10)
+  birthdate   DateTime? @db.Date
+  accessToken String?  @map("access_token") @db.Text
+  refreshToken String? @map("refresh_token") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  subscriptions Subscription[]
+  sessions      Session[]
+
+  @@index([googleId], map: "idx_users_google_id")
+  @@index([email], map: "idx_users_email")
+  @@map("users")
+}
+
+// Subscriptions Table
+model Subscription {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  name         String   @db.VarChar(255)
+  description  String?  @db.Text
+  day          Int      // Day of month (1-31) for payment date
+  month        Int?     // Month (1-12) for yearly subscriptions, null for monthly
+  price        Decimal  @db.Decimal(10, 2)
+  type         SubscriptionType
+  reminderStart ReminderStart @map("reminder_start")
+  lastday      DateTime? @db.Date // End date (null means no expiration)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  installments Installment[]
+
+  @@index([userId], map: "idx_subscriptions_user_id")
+  @@index([type], map: "idx_subscriptions_type")
+  @@map("subscriptions")
+}
+
+// Installments Table
+model Installment {
+  id            String   @id @default(uuid()) @db.Uuid
+  subscriptionId String  @map("subscription_id") @db.Uuid
+  date          DateTime @db.Date
+  link          String?  @db.Text // Google Calendar event link
+  paid          Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId], map: "idx_installments_subscription_id")
+  @@index([date], map: "idx_installments_date")
+  @@index([paid], map: "idx_installments_paid")
+  @@index([link], map: "idx_installments_link")
+  @@map("installments")
+}
+
+// Enums
+enum SubscriptionType {
+  MONTHLY
+  YEARLY
+
+  @@map("subscription_type")
+}
+
+enum ReminderStart {
+  D_0
+  D_1
+  D_3
+  D_7
+  D_14
+
+  @@map("reminder_start")
+}
+
+// Sessions Table
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique @db.VarChar(255) // Session token (HMAC signed)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_sessions_user_id")
+  @@index([token], map: "idx_sessions_token")
+  @@index([expiresAt], map: "idx_sessions_expires_at")
+  @@map("sessions")
+}
+
