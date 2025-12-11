@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createSubscription, updateSubscription } from "@/lib/api";
 import type { SubscriptionType, ReminderStart } from "@/domain/subscriptions/entities/Subscription";
 import { X, AlertCircle, Loader2 } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 
 interface SubscriptionFormProps {
   subscription?: {
@@ -93,12 +94,25 @@ export function SubscriptionForm({ subscription, onClose, onSuccess }: Subscript
 
       if (response.error) {
         setError(response.error);
+        toast.error(
+          `Gagal ${isEdit ? "mengupdate" : "menambahkan"} langganan "${formData.name}": ${response.error}`,
+          6000
+        );
       } else {
+        toast.success(
+          `Langganan "${formData.name}" berhasil ${isEdit ? "diupdate" : "ditambahkan"}! Installments dan reminder kalender telah dibuat.`,
+          5000
+        );
         onSuccess();
         onClose();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      const errorMsg = err instanceof Error ? err.message : "Terjadi kesalahan tidak diketahui";
+      setError(errorMsg);
+      toast.error(
+        `Gagal ${isEdit ? "mengupdate" : "menambahkan"} langganan: ${errorMsg}. Silakan coba lagi.`,
+        6000
+      );
     } finally {
       setLoading(false);
     }

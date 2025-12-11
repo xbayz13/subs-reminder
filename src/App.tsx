@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout/Layout";
 import { LoginPage } from "@/components/auth/LoginPage";
 import { SubscriptionForm } from "@/components/subscriptions/SubscriptionForm";
 import { PaymentConfirmation } from "@/components/calendar/PaymentConfirmation";
-import { ToastContainer, useToast } from "@/components/ui/toast";
+import { Toaster } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import "./index.css";
 
@@ -32,7 +32,6 @@ type Page = "login" | "dashboard" | "subscriptions" | "profile" | "installments"
  * Handles routing and page navigation
  */
 export function App() {
-  const toast = useToast();
   const { user, loading, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState<Page>("login");
   const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
@@ -104,7 +103,7 @@ export function App() {
 
   return (
     <>
-      <ToastContainer toasts={toast.toasts} onClose={toast.closeToast} />
+      <Toaster position="top-right" richColors expand={true} />
       
       {currentPage === "confirm-payment" ? (
         <Suspense fallback={<PageLoader />}>

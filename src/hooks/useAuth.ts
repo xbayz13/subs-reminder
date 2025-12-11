@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { getCurrentUser } from "@/lib/api";
-import { useToast } from "@/components/ui/toast";
+import { toast } from "@/components/ui/toast";
 
 interface User {
   uuid: string;
@@ -29,7 +29,6 @@ export function useAuth() {
     error: null,
   });
   
-  const toast = useToast();
   const mountedRef = useRef(true);
   const checkingRef = useRef(false);
 
@@ -61,7 +60,7 @@ export function useAuth() {
         window.history.replaceState({}, document.title, window.location.pathname);
         
         if (showToasts) {
-          toast.info("Login berhasil! Memverifikasi sesi...", 2000);
+          toast.info("Login berhasil! Memverifikasi sesi Anda...", 2000);
         }
         
         // Wait a bit for cookie to be set
@@ -80,7 +79,7 @@ export function useAuth() {
           });
 
           if (showToasts && loginSuccess !== "success") {
-            toast.success(`Selamat datang, ${user.name || user.email}!`);
+            toast.success(`Selamat datang kembali, ${user.name || user.email}!`, 4000);
           }
         }
       } else {
@@ -92,7 +91,7 @@ export function useAuth() {
           });
 
           if (showToasts && loginSuccess === "success") {
-            toast.error("Gagal memverifikasi sesi. Silakan coba login lagi.");
+            toast.error("Gagal memverifikasi sesi. Silakan coba login lagi menggunakan Google.", 6000);
           }
         }
       }
@@ -105,7 +104,8 @@ export function useAuth() {
         });
 
         if (showToasts) {
-          toast.error("Error: " + (error instanceof Error ? error.message : "Unknown error"));
+          const errorMsg = error instanceof Error ? error.message : "Terjadi kesalahan tidak diketahui";
+          toast.error(`Gagal memverifikasi autentikasi: ${errorMsg}. Silakan refresh halaman atau login kembali.`, 7000);
         }
       }
     } finally {

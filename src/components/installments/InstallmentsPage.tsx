@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { getInstallments, markInstallmentAsPaid, getSubscriptions, getUserProfile } from "@/lib/api";
 import { formatCurrency, type CurrencyCode } from "@/lib/currency";
 import { Calendar, CheckCircle2, XCircle, AlertCircle, Clock, Inbox, Filter } from "lucide-react";
-import { useToast } from "@/components/ui/toast";
+import { toast } from "@/components/ui/toast";
 
 interface Installment {
   uuid: string;
@@ -35,7 +35,6 @@ type FilterType = "all" | "paid" | "unpaid" | "overdue" | "upcoming";
  * Displays list of installments/payments with filtering and payment confirmation
  */
 export function InstallmentsPage() {
-  const toast = useToast();
   const [installments, setInstallments] = useState<Installment[]>([]);
   const [subscriptions, setSubscriptions] = useState<Record<string, Subscription>>({});
   const [loading, setLoading] = useState(true);
@@ -102,7 +101,10 @@ export function InstallmentsPage() {
   const handleMarkAsPaid = useCallback(async (id: string) => {
     console.log("[InstallmentsPage] handleMarkAsPaid called with id:", id);
     
-    if (!confirm("Apakah Anda yakin ingin menandai pembayaran ini sebagai sudah dibayar?")) {
+    const installment = installments.find(i => i.uuid === id);
+    const subscriptionName = installment ? subscriptions[installment.subscriptionId]?.name : "langganan";
+    
+    if (!confirm(`Apakah Anda yakin ingin menandai pembayaran ${subscriptionName} sebagai sudah dibayar?`)) {
       console.log("[InstallmentsPage] User cancelled confirmation");
       return;
     }
@@ -117,10 +119,19 @@ export function InstallmentsPage() {
       
       if (response.error) {
         console.error("[InstallmentsPage] Error marking as paid:", response.error);
-        toast.error(`Gagal menandai pembayaran: ${response.error}`);
+        toast.error(`Gagal menandai pembayaran untuk ${subscriptionName}: ${response.error}`, 6000);
       } else {
         console.log("[InstallmentsPage] Successfully marked as paid, updating state");
-        toast.success("Pembayaran berhasil ditandai sebagai sudah dibayar");
+        const installmentDate = installment ? new Date(installment.date).toLocaleDateString("id-ID", { 
+          day: "numeric", 
+          month: "long", 
+          year: "numeric" 
+        }) : "";
+        
+        toast.success(
+          `Pembayaran ${subscriptionName}${installmentDate ? ` untuk ${installmentDate}` : ""} berhasil ditandai sebagai sudah dibayar. Event kalender telah dihapus.`,
+          5000
+        );
         // Update installments state directly instead of reloading
         setInstallments(prev => prev.map(inst => 
           inst.uuid === id ? { ...inst, paid: true } : inst
@@ -128,11 +139,12 @@ export function InstallmentsPage() {
       }
     } catch (err) {
       console.error("[InstallmentsPage] Exception marking as paid:", err);
-      toast.error(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+      const errorMsg = err instanceof Error ? err.message : "Terjadi kesalahan tidak diketahui";
+      toast.error(`Gagal menandai pembayaran: ${errorMsg}. Silakan coba lagi.`, 6000);
     } finally {
       setMarkingPaid(null);
     }
-  }, [toast]);
+  }, [installments, subscriptions]);
 
   const getInstallmentStatus = useCallback((installment: Installment): "paid" | "overdue" | "upcoming" | "normal" => {
     if (installment.paid) return "paid";

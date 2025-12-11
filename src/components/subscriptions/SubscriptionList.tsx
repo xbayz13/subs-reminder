@@ -8,6 +8,7 @@ import { getSubscriptions, deleteSubscription, getUserProfile } from "@/lib/api"
 import { Plus, Trash2, Edit, Calendar, AlertCircle, Inbox } from "lucide-react";
 import type { SubscriptionType, ReminderStart } from "@/domain/subscriptions/entities/Subscription";
 import { formatCurrency, type CurrencyCode } from "@/lib/currency";
+import { toast } from "@/components/ui/toast";
 
 interface Subscription {
   uuid: string;
@@ -77,17 +78,35 @@ export function SubscriptionList({ onCreateClick, onEditClick }: SubscriptionLis
   }, []);
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus langganan ini?")) {
+    const subscription = subscriptions.find(sub => sub.uuid === id);
+    const subscriptionName = subscription?.name || "langganan ini";
+    
+    if (!confirm(`Apakah Anda yakin ingin menghapus langganan "${subscriptionName}"?\n\nSemua installments dan event kalender terkait juga akan dihapus.`)) {
       return;
     }
 
-    const response = await deleteSubscription(id);
-    if (response.error) {
-      alert(`Error: ${response.error}`);
-    } else {
-      loadSubscriptions();
+    try {
+      const response = await deleteSubscription(id);
+      if (response.error) {
+        toast.error(
+          `Gagal menghapus langganan "${subscriptionName}": ${response.error}`,
+          6000
+        );
+      } else {
+        toast.success(
+          `Langganan "${subscriptionName}" berhasil dihapus. Semua installments dan event kalender terkait telah dihapus.`,
+          5000
+        );
+        loadSubscriptions();
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Terjadi kesalahan tidak diketahui";
+      toast.error(
+        `Gagal menghapus langganan "${subscriptionName}": ${errorMsg}. Silakan coba lagi.`,
+        6000
+      );
     }
-  }, [loadSubscriptions]);
+  }, [subscriptions, loadSubscriptions]);
 
   const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { confirmPaymentFromLink } from "@/lib/api";
 import { CheckCircle2, XCircle, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
-import { useToast } from "@/components/ui/toast";
+import { toast } from "@/components/ui/toast";
 
 interface ConfirmPaymentPageProps {
   link?: string;
@@ -18,7 +18,6 @@ interface ConfirmPaymentPageProps {
  * Standalone page for confirming payment from Google Calendar link
  */
 export function ConfirmPaymentPage({ link: propLink, onSuccess, onCancel }: ConfirmPaymentPageProps) {
-  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,10 +47,10 @@ export function ConfirmPaymentPage({ link: propLink, onSuccess, onCancel }: Conf
       
       if (response.error) {
         setError(response.error);
-        toast.error(`Gagal mengonfirmasi pembayaran: ${response.error}`);
+        toast.error(`Gagal mengonfirmasi pembayaran: ${response.error}. Pastikan link kalender valid.`, 6000);
       } else {
         setSuccess(true);
-        toast.success("Pembayaran berhasil dikonfirmasi!");
+        toast.success("Pembayaran berhasil dikonfirmasi! Event kalender telah dihapus. Anda akan diarahkan ke halaman installments.", 5000);
         
         if (onSuccess) {
           setTimeout(() => onSuccess(), 2000);
@@ -63,9 +62,9 @@ export function ConfirmPaymentPage({ link: propLink, onSuccess, onCancel }: Conf
         }
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan tidak diketahui";
       setError(errorMessage);
-      toast.error(`Error: ${errorMessage}`);
+      toast.error(`Gagal mengonfirmasi pembayaran: ${errorMessage}. Silakan coba lagi atau hubungi support.`, 7000);
     } finally {
       setLoading(false);
     }
