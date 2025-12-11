@@ -40,21 +40,19 @@ export function App() {
   const [editingSubscription, setEditingSubscription] = useState<any>(null);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
-  // Update page based on auth state
-  useEffect(() => {
-    if (!loading) {
-      setCurrentPage(isAuthenticated ? "dashboard" : "login");
-    }
-  }, [isAuthenticated, loading]);
+  // Public pages that don't require authentication
+  const publicPages = ["privacy-policy", "terms-of-service"];
 
   // Check for payment confirmation link, confirm-payment page, or legal pages
+  // This runs on mount and when URL changes
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const link = urlParams.get("confirm") || urlParams.get("link");
     const hash = window.location.hash.replace("#", "");
     const pathname = window.location.pathname;
     
-    // Check for legal pages (public, no auth required)
+    // Check for legal pages first (public, no auth required)
+    // These pages should be accessible without authentication
     if (pathname === "/privacy-policy" || hash === "privacy-policy") {
       setCurrentPage("privacy-policy");
       return;
@@ -74,8 +72,41 @@ export function App() {
       } else {
         setCurrentPage("confirm-payment");
       }
+      return;
     }
   }, []);
+
+  // Listen for hash changes (for SPA navigation)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace("#", "");
+      const pathname = window.location.pathname;
+      
+      if (pathname === "/privacy-policy" || hash === "privacy-policy") {
+        setCurrentPage("privacy-policy");
+      } else if (pathname === "/terms-of-service" || hash === "terms-of-service") {
+        setCurrentPage("terms-of-service");
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  // Update page based on auth state (only if not on public page)
+  useEffect(() => {
+    if (!loading) {
+      // Don't override if already on a public page
+      if (publicPages.includes(currentPage)) {
+        return;
+      }
+      // Don't override if on confirm-payment page
+      if (currentPage === "confirm-payment") {
+        return;
+      }
+      setCurrentPage(isAuthenticated ? "dashboard" : "login");
+    }
+  }, [isAuthenticated, loading, currentPage]);
 
   const handleNavigate = useCallback((page: string) => {
     setCurrentPage(page as Page);
@@ -110,12 +141,11 @@ export function App() {
     );
   }
 
-  // Public pages that don't require authentication
-  const publicPages = ["privacy-policy", "terms-of-service"];
+  // Check if current page is public (doesn't require auth)
   const isPublicPage = publicPages.includes(currentPage);
 
   // Show login page if not authenticated (except for public pages)
-  if (currentPage === "login" || (!isAuthenticated && !isPublicPage)) {
+  if (currentPage === "login" || (!isAuthenticated && !isPublicPage && currentPage !== "confirm-payment")) {
     return <LoginPage />;
   }
 
