@@ -18,6 +18,8 @@
     "test:watch": "bun test --watch",
     "test:integration": "bun test src/presentation/api/routes/__tests__/*.integration.test.ts",
     "test:e2e": "bun test src/__tests__/e2e",
+    "lint": "bunx tsc --noEmit",
+    "lint:check": "bunx tsc --noEmit",
     "verify:oauth": "bun scripts/verify-oauth-config.ts",
     "debug:oauth": "bun scripts/debug-oauth-redirect.ts"
   },

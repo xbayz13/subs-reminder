@@ -6,7 +6,7 @@ import { InstallmentService } from "@/application/installments/InstallmentServic
 import { PrismaUserRepository } from "@/infrastructure/repositories/PrismaUserRepository";
 import { PrismaSubscriptionRepository } from "@/infrastructure/repositories/PrismaSubscriptionRepository";
 import { PrismaInstallmentRepository } from "@/infrastructure/repositories/PrismaInstallmentRepository";
-import { GoogleCalendarService } from "@/infrastructure/google/GoogleCalendarService";
+import { SubscriptionType, ReminderStart } from "@/domain/subscriptions/entities/Subscription";
 import { SessionManager } from "@/infrastructure/auth/SessionManager";
 import {
   setupTestDatabase,
@@ -37,19 +37,17 @@ describe("E2E: Critical Flows", () => {
     prisma = await setupTestDatabase();
     testUser = await createTestUser(prisma);
 
-    const userRepo = new PrismaUserRepository(prisma);
-    const subscriptionRepo = new PrismaSubscriptionRepository(prisma);
-    const installmentRepo = new PrismaInstallmentRepository(prisma);
-    const calendarService = new GoogleCalendarService();
+    const userRepo = new PrismaUserRepository();
+    const subscriptionRepo = new PrismaSubscriptionRepository();
+    const installmentRepo = new PrismaInstallmentRepository();
 
     userService = new UserService(userRepo);
     subscriptionService = new SubscriptionService(
       subscriptionRepo,
       installmentRepo,
-      userRepo,
-      calendarService
+      userRepo
     );
-    installmentService = new InstallmentService(installmentRepo, subscriptionRepo);
+    installmentService = new InstallmentService(installmentRepo, subscriptionRepo, userRepo);
   });
 
   afterAll(async () => {
@@ -87,8 +85,8 @@ describe("E2E: Critical Flows", () => {
       day: 15,
       month: null,
       price: 19.99,
-      type: "MONTHLY",
-      reminderStart: "D_1",
+      type: SubscriptionType.MONTHLY,
+      reminderStart: ReminderStart.D_1,
     };
 
     const createReq = createAuthenticatedRequest(
@@ -208,12 +206,12 @@ describe("E2E: Critical Flows", () => {
         day: 10,
         month: null,
         price: 9.99,
-        type: "MONTHLY",
-        reminderStart: "D_1",
-        lastday: null,
+        type: SubscriptionType.MONTHLY,
+        reminderStart: ReminderStart.D_1,
+        lastday: undefined,
       },
-      null,
-      null
+      undefined,
+      undefined
     );
 
     // 2. Get installments

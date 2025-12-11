@@ -24,7 +24,7 @@ describe("Auth Routes Integration", () => {
     prisma = await setupTestDatabase();
     testUser = await createTestUser(prisma);
 
-    const userRepo = new PrismaUserRepository(prisma);
+    const userRepo = new PrismaUserRepository();
     userService = new UserService(userRepo);
   });
 

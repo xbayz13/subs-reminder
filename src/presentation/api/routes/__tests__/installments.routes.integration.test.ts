@@ -5,7 +5,7 @@ import { SubscriptionService } from "@/application/subscriptions/SubscriptionSer
 import { PrismaInstallmentRepository } from "@/infrastructure/repositories/PrismaInstallmentRepository";
 import { PrismaSubscriptionRepository } from "@/infrastructure/repositories/PrismaSubscriptionRepository";
 import { PrismaUserRepository } from "@/infrastructure/repositories/PrismaUserRepository";
-import { GoogleCalendarService } from "@/infrastructure/google/GoogleCalendarService";
+import { SubscriptionType, ReminderStart } from "@/domain/subscriptions/entities/Subscription";
 import {
   setupTestDatabase,
   teardownTestDatabase,
@@ -31,10 +31,9 @@ describe("Installment Routes Integration", () => {
     testUser = await createTestUser(prisma);
     session = createMockSession(testUser.id, testUser.email);
 
-    const userRepo = new PrismaUserRepository(prisma);
-    const subscriptionRepo = new PrismaSubscriptionRepository(prisma);
-    const installmentRepo = new PrismaInstallmentRepository(prisma);
-    const calendarService = new GoogleCalendarService();
+    const userRepo = new PrismaUserRepository();
+    const subscriptionRepo = new PrismaSubscriptionRepository();
+    const installmentRepo = new PrismaInstallmentRepository();
 
     subscriptionService = new SubscriptionService(
       subscriptionRepo,
@@ -53,12 +52,12 @@ describe("Installment Routes Integration", () => {
         day: 5,
         month: null,
         price: 9.99,
-        type: "MONTHLY",
-        reminderStart: "D_1",
-        lastday: null,
+        type: SubscriptionType.MONTHLY,
+        reminderStart: ReminderStart.D_1,
+        lastday: undefined,
       },
-      null,
-      null
+      undefined,
+      undefined
     );
 
     subscriptionId = subscription.uuid;
@@ -148,7 +147,7 @@ describe("Installment Routes Integration", () => {
     if (!installmentWithLink) {
       // Create one with a link
       const allInstallments = await installmentService.getUserInstallments(testUser.id);
-      if (allInstallments.length > 0) {
+      if (allInstallments.length > 0 && allInstallments[0]) {
         const testLink = "https://calendar.google.com/event?eid=test123";
         await prisma.installment.update({
           where: { id: allInstallments[0].uuid },

@@ -21,9 +21,9 @@ export function createDashboardRoutes(
           const userId = req.session.userId;
 
           // Ensure installments exist for all subscriptions (auto-generate if running low)
-          const subscriptions = await subscriptionService.getUserSubscriptions(userId);
+          const userSubscriptions = await subscriptionService.getUserSubscriptions(userId);
           await Promise.all(
-            subscriptions.map(sub => subscriptionService.ensureInstallmentsForSubscription(sub.uuid))
+            userSubscriptions.map(sub => subscriptionService.ensureInstallmentsForSubscription(sub.uuid))
           );
 
           // Get unpaid installments for current month
@@ -49,13 +49,13 @@ export function createDashboardRoutes(
           
           // Get subscription info for all installments
           const subscriptionIds = [...new Set(unpaidCurrentMonthInstallments.map(inst => inst.subscriptionId))];
-          const subscriptions = await Promise.all(
+          const subscriptionDetails = await Promise.all(
             subscriptionIds.map(id => subscriptionService.getSubscriptionById(id))
           );
           
           // Create a map for quick lookup
           const subscriptionMap = new Map(
-            subscriptions
+            subscriptionDetails
               .filter((sub): sub is NonNullable<typeof sub> => sub !== null)
               .map(sub => [sub.uuid, sub])
           );

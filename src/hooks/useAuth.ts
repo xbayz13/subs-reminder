@@ -69,7 +69,7 @@ export function useAuth() {
       }
 
       const response = await getCurrentUser();
-      const user = response.data?.data || response.data;
+      const user = (response.data as any)?.data || response.data;
 
       if (user && user.email) {
         if (mountedRef.current) {

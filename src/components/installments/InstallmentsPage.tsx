@@ -62,7 +62,7 @@ export function InstallmentsPage() {
 
       // Set currency
       if (currencyResponse.data) {
-        const profileData = currencyResponse.data.data || currencyResponse.data;
+        const profileData = (currencyResponse.data as any).data || currencyResponse.data;
         setCurrency((profileData.currency || "IDR") as CurrencyCode);
       }
 
@@ -70,7 +70,7 @@ export function InstallmentsPage() {
       if (subsResponse.data) {
         const subsData = Array.isArray(subsResponse.data) 
           ? subsResponse.data 
-          : (subsResponse.data.data || []);
+          : ((subsResponse.data as any).data || []);
         
         const subsMap: Record<string, Subscription> = {};
         subsData.forEach((sub: any) => {
@@ -89,7 +89,7 @@ export function InstallmentsPage() {
       } else if (instResponse.data) {
         const instData = Array.isArray(instResponse.data)
           ? instResponse.data
-          : (instResponse.data.data || []);
+          : ((instResponse.data as any).data || []);
         setInstallments(instData);
       }
     } catch (err) {

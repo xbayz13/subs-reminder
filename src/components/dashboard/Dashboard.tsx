@@ -52,7 +52,7 @@ export function Dashboard() {
     try {
       const response = await getUserProfile();
       if (response.data) {
-        const profileData = response.data.data || response.data;
+        const profileData = (response.data as any).data || response.data;
         setCurrency((profileData.currency || "IDR") as CurrencyCode);
       }
     } catch (err) {
@@ -71,7 +71,7 @@ export function Dashboard() {
       setError(response.error);
     } else if (response.data) {
       // API returns { data: { ... } }, so we need to extract the nested data
-      const dashboardData = response.data.data || response.data;
+      const dashboardData = (response.data as any).data || response.data;
       setData(dashboardData);
     }
     setLoading(false);

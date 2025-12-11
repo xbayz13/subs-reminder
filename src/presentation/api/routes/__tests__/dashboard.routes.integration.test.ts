@@ -5,7 +5,7 @@ import { InstallmentService } from "@/application/installments/InstallmentServic
 import { PrismaSubscriptionRepository } from "@/infrastructure/repositories/PrismaSubscriptionRepository";
 import { PrismaInstallmentRepository } from "@/infrastructure/repositories/PrismaInstallmentRepository";
 import { PrismaUserRepository } from "@/infrastructure/repositories/PrismaUserRepository";
-import { GoogleCalendarService } from "@/infrastructure/google/GoogleCalendarService";
+import { SubscriptionType, ReminderStart } from "@/domain/subscriptions/entities/Subscription";
 import {
   setupTestDatabase,
   teardownTestDatabase,
@@ -30,19 +30,17 @@ describe("Dashboard Routes Integration", () => {
     testUser = await createTestUser(prisma);
     session = createMockSession(testUser.id, testUser.email);
 
-    const userRepo = new PrismaUserRepository(prisma);
-    const subscriptionRepo = new PrismaSubscriptionRepository(prisma);
-    const installmentRepo = new PrismaInstallmentRepository(prisma);
-    const calendarService = new GoogleCalendarService();
+    const userRepo = new PrismaUserRepository();
+    const subscriptionRepo = new PrismaSubscriptionRepository();
+    const installmentRepo = new PrismaInstallmentRepository();
 
     subscriptionService = new SubscriptionService(
       subscriptionRepo,
       installmentRepo,
-      userRepo,
-      calendarService
+      userRepo
     );
 
-    installmentService = new InstallmentService(installmentRepo, subscriptionRepo);
+    installmentService = new InstallmentService(installmentRepo, subscriptionRepo, userRepo);
 
     // Create test subscriptions
     await subscriptionService.createSubscription(
@@ -53,12 +51,12 @@ describe("Dashboard Routes Integration", () => {
         day: 15,
         month: null,
         price: 9.99,
-        type: "MONTHLY",
-        reminderStart: "D_1",
-        lastday: null,
+        type: SubscriptionType.MONTHLY,
+        reminderStart: ReminderStart.D_1,
+        lastday: undefined,
       },
-      null,
-      null
+      undefined,
+      undefined
     );
 
     await subscriptionService.createSubscription(
@@ -69,12 +67,12 @@ describe("Dashboard Routes Integration", () => {
         day: 20,
         month: null,
         price: 14.99,
-        type: "MONTHLY",
-        reminderStart: "D_3",
-        lastday: null,
+        type: SubscriptionType.MONTHLY,
+        reminderStart: ReminderStart.D_3,
+        lastday: undefined,
       },
-      null,
-      null
+      undefined,
+      undefined
     );
   });
 

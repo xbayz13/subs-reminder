@@ -48,7 +48,7 @@ export function ProfilePage() {
         setError(response.error);
       } else if (response.data) {
         // API returns { data: { data: {...} } }, so we need to extract the nested data
-        const profileData = response.data.data || response.data;
+        const profileData = (response.data as any).data || response.data;
         setProfile(profileData);
         setCurrency(profileData.currency || "IDR");
       }

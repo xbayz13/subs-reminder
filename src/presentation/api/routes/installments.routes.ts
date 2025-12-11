@@ -31,9 +31,10 @@ export function createInstallmentRoutes(
           return Response.json({
             data: installments.map(inst => {
               // Extract htmlLink from stored link (handles both combined and old format)
-              let htmlLink = inst.link;
+              let htmlLink: string | null = inst.link;
               if (inst.link && inst.link.includes("|")) {
-                htmlLink = inst.link.split("|")[0];
+                const parts = inst.link.split("|");
+                htmlLink = parts[0] || null;
               }
               
               return {
@@ -137,9 +138,10 @@ export function createInstallmentRoutes(
           const installment = await installmentService.confirmPaymentFromCalendarLink(link);
 
           // Extract htmlLink from stored link for response
-          let htmlLink = installment.link;
+          let htmlLink: string | null = installment.link;
           if (installment.link && installment.link.includes("|")) {
-            htmlLink = installment.link.split("|")[0];
+            const parts = installment.link.split("|");
+            htmlLink = parts[0] || null;
           }
 
           return Response.json({

@@ -25,7 +25,7 @@ describe("User Routes Integration", () => {
     testUser = await createTestUser(prisma);
     session = createMockSession(testUser.id, testUser.email);
 
-    const userRepo = new PrismaUserRepository(prisma);
+    const userRepo = new PrismaUserRepository();
     userService = new UserService(userRepo);
   });
 

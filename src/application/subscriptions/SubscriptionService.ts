@@ -203,9 +203,23 @@ export class SubscriptionService {
     }
 
     // Find the latest installment date
+    if (existingInstallments.length === 0) {
+      return; // No installments to check
+    }
+    
+    const firstInstallment = existingInstallments[0];
+    if (!firstInstallment) {
+      return; // Safety check
+    }
+    
     const latestInstallment = existingInstallments.reduce((latest, inst) => {
+      if (!latest) return inst;
       return inst.date > latest.date ? inst : latest;
-    }, existingInstallments[0]);
+    }, firstInstallment);
+
+    if (!latestInstallment) {
+      return; // Should not happen, but TypeScript safety check
+    }
 
     const latestDate = new Date(latestInstallment.date);
     const now = new Date();
@@ -412,8 +426,10 @@ export class SubscriptionService {
         const parts = link.split("|");
         if (parts.length >= 2) {
           const eventId = parts[parts.length - 1]; // Last part is eventId
-          console.log("[SubscriptionService] Extracted eventId from combined format:", eventId);
-          return eventId;
+          if (eventId) {
+            console.log("[SubscriptionService] Extracted eventId from combined format:", eventId);
+            return eventId;
+          }
         }
       }
       
@@ -430,9 +446,11 @@ export class SubscriptionService {
             // Format is usually: calendarId_eventId@google.com
             const parts = decoded.split('_');
             if (parts.length > 1) {
-              const eventId = parts[parts.length - 1].split('@')[0];
-              console.log("[SubscriptionService] Extracted eventId from decoded eid:", eventId);
-              return eventId;
+              const eventId = parts[parts.length - 1]?.split('@')[0];
+              if (eventId) {
+                console.log("[SubscriptionService] Extracted eventId from decoded eid:", eventId);
+                return eventId;
+              }
             }
           } catch (decodeError) {
             console.warn("[SubscriptionService] Failed to decode eid:", decodeError);

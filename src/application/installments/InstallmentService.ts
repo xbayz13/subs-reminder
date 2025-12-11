@@ -1,6 +1,7 @@
 import type { IInstallmentRepository } from "@/domain/installments/repositories/IInstallmentRepository";
 import type { ISubscriptionRepository } from "@/domain/subscriptions/repositories/ISubscriptionRepository";
 import type { IUserRepository } from "@/domain/users/repositories/IUserRepository";
+import type { Installment } from "@/domain/installments/entities/Installment";
 import { GoogleCalendarService } from "@/infrastructure/google/GoogleCalendarService";
 
 /**
@@ -22,28 +23,28 @@ export class InstallmentService {
   /**
    * Get all installments for a user
    */
-  async getUserInstallments(userId: string): Promise<import("@/domain/installments/entities/Installment")[]> {
+  async getUserInstallments(userId: string): Promise<Installment[]> {
     return await this.installmentRepository.findByUserId(userId);
   }
 
   /**
    * Get upcoming installments
    */
-  async getUpcomingInstallments(userId: string, days: number = 30): Promise<import("@/domain/installments/entities/Installment")[]> {
+  async getUpcomingInstallments(userId: string, days: number = 30): Promise<Installment[]> {
     return await this.installmentRepository.findUpcomingByUserId(userId, days);
   }
 
   /**
    * Get overdue installments
    */
-  async getOverdueInstallments(userId: string): Promise<import("@/domain/installments/entities/Installment")[]> {
+  async getOverdueInstallments(userId: string): Promise<Installment[]> {
     return await this.installmentRepository.findOverdueByUserId(userId);
   }
 
   /**
    * Get paid installments
    */
-  async getPaidInstallments(userId: string): Promise<import("@/domain/installments/entities/Installment")[]> {
+  async getPaidInstallments(userId: string): Promise<Installment[]> {
     return await this.installmentRepository.findPaidByUserId(userId);
   }
 
@@ -66,8 +67,10 @@ export class InstallmentService {
         const parts = link.split("|");
         if (parts.length >= 2) {
           const eventId = parts[parts.length - 1]; // Last part is eventId
-          console.log("[InstallmentService] Extracted eventId from combined format:", eventId);
-          return eventId;
+          if (eventId) {
+            console.log("[InstallmentService] Extracted eventId from combined format:", eventId);
+            return eventId;
+          }
         }
       }
       
@@ -84,11 +87,14 @@ export class InstallmentService {
             // Format is usually: calendarId_eventId@google.com
             const parts = decoded.split('_');
             if (parts.length > 1) {
-              const eventId = parts[parts.length - 1].split('@')[0];
-              console.log("[InstallmentService] Extracted eventId from decoded eid:", eventId);
-              return eventId;
+              const eventId = parts[parts.length - 1]?.split('@')[0];
+              if (eventId) {
+                console.log("[InstallmentService] Extracted eventId from decoded eid:", eventId);
+                return eventId;
+              }
             }
-            return decoded.split('@')[0];
+            const eventId = decoded.split('@')[0];
+            return eventId || null;
           } catch (decodeError) {
             console.warn("[InstallmentService] Could not decode eid, trying direct use:", eid);
             return eid;
@@ -112,9 +118,11 @@ export class InstallmentService {
             const decoded = Buffer.from(eid.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8');
             const parts = decoded.split('_');
             if (parts.length > 1) {
-              return parts[parts.length - 1].split('@')[0];
+              const eventId = parts[parts.length - 1]?.split('@')[0];
+              return eventId || null;
             }
-            return decoded.split('@')[0];
+            const eventId = decoded.split('@')[0];
+            return eventId || null;
           } catch {
             return eid;
           }
@@ -136,7 +144,8 @@ export class InstallmentService {
     
     // If combined format, return the htmlLink part (before |)
     if (link.includes("|")) {
-      return link.split("|")[0];
+      const htmlLink = link.split("|")[0];
+      return htmlLink || null;
     }
     
     // Otherwise return as is (old format)
@@ -146,7 +155,7 @@ export class InstallmentService {
   /**
    * Mark installment as paid and delete calendar event if exists
    */
-  async markAsPaid(uuid: string, userId?: string): Promise<import("@/domain/installments/entities/Installment")> {
+  async markAsPaid(uuid: string, userId?: string): Promise<Installment> {
     const installment = await this.installmentRepository.findById(uuid);
     if (!installment) {
       throw new Error("Installment not found");
@@ -189,7 +198,7 @@ export class InstallmentService {
   /**
    * Confirm payment from Google Calendar link
    */
-  async confirmPaymentFromCalendarLink(link: string): Promise<import("@/domain/installments/entities/Installment")> {
+  async confirmPaymentFromCalendarLink(link: string): Promise<Installment> {
     // Find installment by link (repository handles both htmlLink and combined format)
     const installment = await this.installmentRepository.findByCalendarLink(link);
     if (!installment) {
@@ -234,7 +243,7 @@ export class InstallmentService {
   /**
    * Update calendar link for installment
    */
-  async updateCalendarLink(uuid: string, link: string): Promise<import("@/domain/installments/entities/Installment")> {
+  async updateCalendarLink(uuid: string, link: string): Promise<Installment> {
     const installment = await this.installmentRepository.findById(uuid);
     if (!installment) {
       throw new Error("Installment not found");

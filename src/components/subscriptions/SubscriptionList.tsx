@@ -44,7 +44,7 @@ export function SubscriptionList({ onCreateClick, onEditClick }: SubscriptionLis
     Promise.all([
       getUserProfile().then(response => {
         if (response.data) {
-          const profileData = response.data.data || response.data;
+          const profileData = (response.data as any).data || response.data;
           setCurrency((profileData.currency || "IDR") as CurrencyCode);
         }
       }).catch(() => setCurrency("IDR")),
@@ -63,7 +63,7 @@ export function SubscriptionList({ onCreateClick, onEditClick }: SubscriptionLis
       // API returns { data: { data: [...] } }, so we need to extract the nested data
       const subscriptionsData = Array.isArray(response.data) 
         ? response.data 
-        : (response.data.data || []);
+        : ((response.data as any).data || []);
       
       // Ensure it's an array
       if (Array.isArray(subscriptionsData)) {

@@ -76,7 +76,7 @@ function signCookie(value: string): string {
  * Verify that a signed cookie can be read by SessionManager
  * (for debugging test issues)
  */
-export function verifyTestCookie(session: SessionData): boolean {
+export async function verifyTestCookie(session: SessionData): Promise<boolean> {
   const sessionJson = JSON.stringify(session);
   const signedCookie = signCookie(sessionJson);
   
@@ -87,7 +87,20 @@ export function verifyTestCookie(session: SessionData): boolean {
     },
   });
   
-  const readSession = SessionManager.getSession(testReq);
+  // Create a mock CookieMap from the request
+  const cookies = new Map<string, string>();
+  const cookieHeader = testReq.headers.get("Cookie");
+  if (cookieHeader) {
+    const cookiePairs = cookieHeader.split(";").map(c => c.trim());
+    for (const pair of cookiePairs) {
+      const [key, value] = pair.split("=");
+      if (key && value) {
+        cookies.set(key, value);
+      }
+    }
+  }
+  
+  const readSession = await SessionManager.getSession(cookies as any);
   return readSession !== null && readSession.userId === session.userId;
 }
 

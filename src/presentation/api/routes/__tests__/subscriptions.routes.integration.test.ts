@@ -4,7 +4,7 @@ import { SubscriptionService } from "@/application/subscriptions/SubscriptionSer
 import { PrismaSubscriptionRepository } from "@/infrastructure/repositories/PrismaSubscriptionRepository";
 import { PrismaInstallmentRepository } from "@/infrastructure/repositories/PrismaInstallmentRepository";
 import { PrismaUserRepository } from "@/infrastructure/repositories/PrismaUserRepository";
-import { GoogleCalendarService } from "@/infrastructure/google/GoogleCalendarService";
+import { SubscriptionType, ReminderStart } from "@/domain/subscriptions/entities/Subscription";
 import {
   setupTestDatabase,
   teardownTestDatabase,
@@ -32,16 +32,14 @@ describe("Subscription Routes Integration", () => {
     session = createMockSession(testUser.id, testUser.email);
 
     // Setup services
-    const userRepo = new PrismaUserRepository(prisma);
-    const subscriptionRepo = new PrismaSubscriptionRepository(prisma);
-    const installmentRepo = new PrismaInstallmentRepository(prisma);
-    const calendarService = new GoogleCalendarService();
+    const userRepo = new PrismaUserRepository();
+    const subscriptionRepo = new PrismaSubscriptionRepository();
+    const installmentRepo = new PrismaInstallmentRepository();
 
     subscriptionService = new SubscriptionService(
       subscriptionRepo,
       installmentRepo,
-      userRepo,
-      calendarService
+      userRepo
     );
   });
 
@@ -86,8 +84,8 @@ describe("Subscription Routes Integration", () => {
       day: 15,
       month: null,
       price: 9.99,
-      type: "MONTHLY",
-      reminderStart: "D_1",
+      type: SubscriptionType.MONTHLY,
+      reminderStart: ReminderStart.D_1,
     };
 
     const req = createAuthenticatedRequest(
@@ -123,7 +121,7 @@ describe("Subscription Routes Integration", () => {
       month: 6, // June
       price: 14.99,
       type: "YEARLY",
-      reminderStart: "D_7",
+      reminderStart: ReminderStart.D_7,
     };
 
     const createReq = createAuthenticatedRequest(
