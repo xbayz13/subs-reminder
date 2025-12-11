@@ -203,6 +203,18 @@ Sebelum submit untuk verifikasi, pastikan:
 - [OAuth Consent Screen Documentation](https://developers.google.com/identity/protocols/oauth2/openid-connect#appsetup)
 - [Privacy Policy Requirements](https://support.google.com/cloud/answer/9110914#privacy)
 
+## 📝 Template untuk Form Verification
+
+Lihat **[GOOGLE_OAUTH_VERIFICATION_DETAILS.md](./GOOGLE_OAUTH_VERIFICATION_DETAILS.md)** untuk template lengkap yang bisa digunakan untuk mengisi bagian "Share any final details about your app" dalam form verifikasi Google OAuth.
+
+Template tersebut mencakup:
+- Application overview
+- OAuth scopes usage explanation
+- Data collection and usage
+- Privacy and security information
+- Test user credentials (jika diperlukan)
+- Contact information
+
 ---
 
 ## 💡 Tips
