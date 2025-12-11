@@ -43,7 +43,7 @@ export class UserService {
         data.email,
         data.avatar || null,
         null, // country
-        "USD", // default currency
+        "IDR", // default currency
         null, // birthdate
         data.googleId,
         data.accessToken,

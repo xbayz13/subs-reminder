@@ -5,11 +5,12 @@ import { Dashboard } from "@/components/dashboard/Dashboard";
 import { SubscriptionList } from "@/components/subscriptions/SubscriptionList";
 import { SubscriptionForm } from "@/components/subscriptions/SubscriptionForm";
 import { PaymentConfirmation } from "@/components/calendar/PaymentConfirmation";
+import { ProfilePage } from "@/components/profile/ProfilePage";
 import { ToastContainer, useToast } from "@/components/ui/toast";
 import { useAuth } from "@/hooks/useAuth";
 import "./index.css";
 
-type Page = "login" | "dashboard" | "subscriptions";
+type Page = "login" | "dashboard" | "subscriptions" | "profile";
 
 /**
  * Main App Component
@@ -94,6 +95,7 @@ export function App() {
             onEditClick={handleEditSubscription}
           />
         )}
+        {currentPage === "profile" && <ProfilePage />}
       </Layout>
 
       {showSubscriptionForm && (

@@ -57,7 +57,31 @@ export async function getCurrentUser() {
     name: string;
     avatar?: string | null;
     googleId: string;
+    country?: string | null;
+    currency?: string;
+    birthdate?: string | null;
+    age?: number | null;
+    createdAt?: string;
+    updatedAt?: string;
   }>("/auth/me");
+}
+
+/**
+ * Get current user profile (full details)
+ */
+export async function getUserProfile() {
+  return apiRequest<{
+    uuid: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+    country: string | null;
+    currency: string;
+    birthdate: string | null;
+    age: number | null;
+    createdAt: string;
+    updatedAt: string;
+  }>("/api/users/me");
 }
 
 /**
