@@ -34,9 +34,28 @@
     <meta name="twitter:creator" content="@xbayz13" />
     <meta name="twitter:site" content="@xbayz13" />
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="./logo.svg" />
-    <link rel="apple-touch-icon" href="./logo.svg" />
+    <!-- Favicon - will be added dynamically to avoid build-time resolution -->
+    <script>
+      // Add favicon links dynamically
+      (function() {
+        const favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        favicon.type = 'image/x-icon';
+        favicon.href = '/favicon.ico';
+        document.head.appendChild(favicon);
+        
+        const shortcut = document.createElement('link');
+        shortcut.rel = 'shortcut icon';
+        shortcut.type = 'image/x-icon';
+        shortcut.href = '/favicon.ico';
+        document.head.appendChild(shortcut);
+        
+        const apple = document.createElement('link');
+        apple.rel = 'apple-touch-icon';
+        apple.href = '/favicon.ico';
+        document.head.appendChild(apple);
+      })();
+    </script>
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://subs-reminder.app/" />

@@ -263,6 +263,7 @@ Subscription menggunakan `day` (1-31) dan `month` (1-12, nullable):
 
 - **[USER_GUIDE.md](./USER_GUIDE.md)** - Panduan lengkap untuk end users
 - **[GOOGLE_OAUTH_SETUP.md](./GOOGLE_OAUTH_SETUP.md)** - Setup Google OAuth 2.0 (detailed guide)
+- **[PRODUCTION_OAUTH_VERIFICATION.md](./PRODUCTION_OAUTH_VERIFICATION.md)** - Panduan verifikasi OAuth untuk production (mengatasi warning "Google hasn't verified this app")
 - **[PRISMA_SETUP.md](./PRISMA_SETUP.md)** - Setup database dengan Prisma (detailed guide)
 - **[TESTING.md](./TESTING.md)** - Testing guide dan documentation
 - **[PROGRESS.md](./PROGRESS.md)** - Progress tracking dan development notes

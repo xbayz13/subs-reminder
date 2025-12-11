@@ -13,6 +13,8 @@ const SubscriptionList = lazy(() => import("@/components/subscriptions/Subscript
 const ProfilePage = lazy(() => import("@/components/profile/ProfilePage").then(m => ({ default: m.ProfilePage })));
 const InstallmentsPage = lazy(() => import("@/components/installments/InstallmentsPage").then(m => ({ default: m.InstallmentsPage })));
 const ConfirmPaymentPage = lazy(() => import("@/components/installments/ConfirmPaymentPage").then(m => ({ default: m.ConfirmPaymentPage })));
+const PrivacyPolicy = lazy(() => import("@/components/legal/PrivacyPolicy").then(m => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazy(() => import("@/components/legal/TermsOfService").then(m => ({ default: m.TermsOfService })));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -24,7 +26,7 @@ const PageLoader = () => (
   </div>
 );
 
-type Page = "login" | "dashboard" | "subscriptions" | "profile" | "installments" | "confirm-payment";
+type Page = "login" | "dashboard" | "subscriptions" | "profile" | "installments" | "confirm-payment" | "privacy-policy" | "terms-of-service";
 
 /**
  * Main App Component
@@ -45,11 +47,23 @@ export function App() {
     }
   }, [isAuthenticated, loading]);
 
-  // Check for payment confirmation link or confirm-payment page
+  // Check for payment confirmation link, confirm-payment page, or legal pages
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const link = urlParams.get("confirm") || urlParams.get("link");
     const hash = window.location.hash.replace("#", "");
+    const pathname = window.location.pathname;
+    
+    // Check for legal pages (public, no auth required)
+    if (pathname === "/privacy-policy" || hash === "privacy-policy") {
+      setCurrentPage("privacy-policy");
+      return;
+    }
+    
+    if (pathname === "/terms-of-service" || hash === "terms-of-service") {
+      setCurrentPage("terms-of-service");
+      return;
+    }
     
     if (hash === "confirm-payment" || link) {
       if (link) {
@@ -96,8 +110,12 @@ export function App() {
     );
   }
 
-  // Show login page if not authenticated
-  if (currentPage === "login") {
+  // Public pages that don't require authentication
+  const publicPages = ["privacy-policy", "terms-of-service"];
+  const isPublicPage = publicPages.includes(currentPage);
+
+  // Show login page if not authenticated (except for public pages)
+  if (currentPage === "login" || (!isAuthenticated && !isPublicPage)) {
     return <LoginPage />;
   }
 
@@ -105,7 +123,15 @@ export function App() {
     <>
       <Toaster position="top-right" richColors expand={true} />
       
-      {currentPage === "confirm-payment" ? (
+      {currentPage === "privacy-policy" ? (
+        <Suspense fallback={<PageLoader />}>
+          <PrivacyPolicy />
+        </Suspense>
+      ) : currentPage === "terms-of-service" ? (
+        <Suspense fallback={<PageLoader />}>
+          <TermsOfService />
+        </Suspense>
+      ) : currentPage === "confirm-payment" ? (
         <Suspense fallback={<PageLoader />}>
           <ConfirmPaymentPage
             link={paymentLink || undefined}

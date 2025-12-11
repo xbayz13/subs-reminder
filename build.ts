@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import plugin from "bun-plugin-tailwind";
-import { existsSync } from "fs";
+import { existsSync, copyFileSync } from "fs";
 import { rm } from "fs/promises";
 import path from "path";
 
@@ -145,5 +145,15 @@ const outputTable = result.outputs.map(output => ({
 
 console.table(outputTable);
 const buildTime = (end - start).toFixed(2);
+
+// Copy favicon to dist
+const faviconSource = path.join(process.cwd(), "public", "favicon.ico");
+const faviconDest = path.join(outdir, "favicon.ico");
+if (existsSync(faviconSource)) {
+  copyFileSync(faviconSource, faviconDest);
+  console.log(`📄 Copied favicon.ico to ${path.relative(process.cwd(), faviconDest)}`);
+} else {
+  console.warn(`⚠️  Favicon not found at ${faviconSource}`);
+}
 
 console.log(`\n✅ Build completed in ${buildTime}ms\n`);

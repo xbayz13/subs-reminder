@@ -1,4 +1,6 @@
 import { serve } from "bun";
+import { readFileSync } from "fs";
+import { join } from "path";
 import index from "./index.html";
 import { env, isDevelopment } from "./config/env";
 import { userService, subscriptionService, installmentService } from "./infrastructure/di/container";
@@ -17,9 +19,31 @@ const installmentRoutes = createInstallmentRoutes(installmentService, subscripti
 const dashboardRoutes = createDashboardRoutes(subscriptionService, installmentService);
 const swaggerRoutes = createSwaggerRoutes();
 
+// Load favicon
+const faviconPath = join(process.cwd(), "public", "favicon.ico");
+let favicon: Buffer | null = null;
+try {
+  favicon = readFileSync(faviconPath);
+} catch (error) {
+  console.warn("⚠️  Favicon not found at", faviconPath);
+}
+
 const server = serve({
   port: env.PORT,
   routes: {
+    // Serve favicon
+    "/favicon.ico": favicon
+      ? {
+          GET: () =>
+            new Response(favicon, {
+              headers: {
+                "Content-Type": "image/x-icon",
+                "Cache-Control": "public, max-age=31536000, immutable",
+              },
+            }),
+        }
+      : index,
+
     // Serve index.html for all unmatched routes (SPA fallback)
     "/*": index,
 
